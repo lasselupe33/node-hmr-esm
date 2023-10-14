@@ -4,7 +4,8 @@ import path from "node:path";
 import chalk from "chalk";
 import enhancedResolve from "enhanced-resolve";
 
-import { restartIteration, run } from "./core.run";
+import { restartIteration } from "./core.globals";
+import { run } from "./core.run";
 import { transform } from "./core.transform";
 import { moduleExtensions, supportedExtensions } from "./utils";
 
@@ -69,10 +70,11 @@ export async function resolve(
     dependencyMap.set(parentPathname, base);
   })();
 
-  resolved.url.searchParams.set(
-    "mtime",
-    `${fileLastModifiedAt[resolved.url.pathname] ?? 0}`
-  );
+  const lastModifedAt =
+    fileLastModifiedAt[resolved.url.pathname] ||
+    (await fs.promises.stat(resolved.url.pathname)).mtimeMs;
+
+  resolved.url.searchParams.set("mtime", `${lastModifedAt}`);
 
   resolved.url.searchParams.set("iteration", `${restartIteration}`);
 
@@ -129,11 +131,9 @@ export async function load(
         const segments = url.pathname.split(path.sep);
 
         console.info(
-          `${chalk.cyan("[@node-hmr]")} ${chalk.dim(
+          `${chalk.cyan("[@node-hmr]")} detected change in ${chalk.dim(
             `${segments.slice(0, -3).join(path.sep)}`
-          )}${path.sep}${segments
-            .slice(-3)
-            .join(path.sep)} changed. ${chalk.dim(
+          )}${path.sep}${segments.slice(-3).join(path.sep)}. ${chalk.dim(
             "Clearing module state and re-running entrypoint."
           )}`
         );
