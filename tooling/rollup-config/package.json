@@ -1,0 +1,23 @@
+{
+  "name": "@tooling/rollup-config",
+  "version": "0.0.0",
+  "scripts": {
+    "eslint": "eslint --cache --no-error-on-unmatched-pattern --max-warnings 20 './*.{js,jsx,ts,tsx,mjs}'"
+  },
+  "dependencies": {
+    "magic-string": "^0.30.2",
+    "rollup": "^3.28.0",
+    "rollup-plugin-esbuild": "^5.0.0",
+    "@babel/core": "^7.21.0",
+    "@babel/runtime": "^7.21.0",
+    "@linaria/rollup": "4.3.6",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "rollup-plugin-css-only": "^4.3.0"
+  },
+  "devDependencies": {
+    "@tooling/eslint-config": "*"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@tooling/linaria-config",
+  "version": "0.0.0",
+  "scripts": {
+    "eslint": "eslint --cache --no-error-on-unmatched-pattern --max-warnings 20 './*.{js,jsx,ts,tsx,mjs}'"
+  },
+  "peerDependencies": {
+    "@linaria/core": "4.2.8"
+  },
+  "dependencies": {
+    "@linaria/webpack5-loader": "4.1.15"
+  },
+  "devDependencies": {
+    "@tooling/eslint-config": "*"
+  }
+}

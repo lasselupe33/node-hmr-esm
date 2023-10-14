@@ -1,0 +1,45 @@
+{
+  "name": "@node-hmr/core",
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "types": "./src/index.client.ts",
+      "default": "./lib/index.mjs"
+    },
+    "./backend": {
+      "types": "./src/index.backend.ts",
+      "default": "./lib/backend.mjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "lib/**/*",
+    "src/**/*"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "eslint",
+    "eslintplugin"
+  ],
+  "scripts": {
+    "eslint": "eslint --cache --no-error-on-unmatched-pattern --max-warnings 20 'src/**/*.{js,jsx,ts,tsx,mjs}'",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "dev": "npx rollup -c rollup.config.js --watch",
+    "build": "npx rollup -c rollup.config.js",
+    "start": "CSS_EXTRACT__DEBUG=true node ./lib/index.mjs",
+    "debug": "node --inspect --loader ./lib/loader.mjs ./lib/empty.mjs"
+  },
+  "dependencies": {
+    "@node-hmr/utils": "*",
+    "chalk": "^5.3.0",
+    "enhanced-resolve": "^5.15.0",
+    "fast-glob": "^3.3.1",
+    "esbuild": "^0.19.4"
+  },
+  "devDependencies": {
+    "@tooling/typescript-config": "*",
+    "@tooling/rollup-config": "*",
+    "@tooling/eslint-config": "*",
+    "@types/node": "^18.18.1"
+  }
+}

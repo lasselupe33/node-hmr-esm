@@ -1,0 +1,8 @@
+# many json config files use JavaScript-style code comments.
+#
+# the rule below prevents pedantic syntax highlighters such as GitHub's from
+# highlighting these comments as errors.
+#
+# For more information, see this issue: https://github.com/microsoft/rushstack/issues/1088
+#
+*.json                       linguist-language=JSON-with-Comments

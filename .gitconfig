@@ -1,0 +1,8 @@
+# shared git configurations can be placed here, and will apply for all
+# developers who have correctly configured their git client in the repo
+
+[pull]
+  rebase = false
+
+[push]
+  autoSetupRemote = true

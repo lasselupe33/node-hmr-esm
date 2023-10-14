@@ -1,0 +1,48 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "globalEnv": ["NODE_ENV", "APP_ENV"],
+  "pipeline": {
+    "build:app": {
+      "dependsOn": ["^build", "^build:app"],
+      "outputs": ["lib/**", ".next/**", "!.next/cache/**"],
+      "inputs": ["rollup.config.js", "src/**"],
+      "outputMode": "new-only"
+    },
+    "build": {
+      "dependsOn": [],
+      "outputs": ["lib/**", ".next/**", "!.next/cache/**"],
+      "inputs": ["rollup.config.js", "src/**"],
+      "outputMode": "new-only"
+    },
+
+    //
+    // DEV
+    //
+    "dev:app": {
+      "persistent": true,
+      "cache": false
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+
+    //
+    // LINT + TEST
+    //
+    // all of our code analysis tools support built-in caching, which will allow
+    // more fine-grained caching instead of hit/miss on the package-level as
+    // turborepo ships with, so we prefer their built-in caching
+    //
+
+    "stylelint": {
+      "cache": false
+    },
+    "eslint": {
+      "cache": false
+    },
+    "type-check": {
+      "cache": false
+    }
+  }
+}
