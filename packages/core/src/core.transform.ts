@@ -1,7 +1,8 @@
 import path from "path";
 
-import { supportedExtensions } from "@node-hmr/utils";
 import esbuild from "esbuild";
+
+import { supportedExtensions } from "./utils";
 
 export async function transform(filePath: string): Promise<string | undefined> {
   const transformed = await esbuild.build({

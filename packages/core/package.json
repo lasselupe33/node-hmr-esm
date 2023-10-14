@@ -17,10 +17,6 @@
     "src/**/*"
   ],
   "license": "MIT",
-  "keywords": [
-    "eslint",
-    "eslintplugin"
-  ],
   "scripts": {
     "eslint": "eslint --cache --no-error-on-unmatched-pattern --max-warnings 20 'src/**/*.{js,jsx,ts,tsx,mjs}'",
     "type-check": "tsc -p tsconfig.json --noEmit",

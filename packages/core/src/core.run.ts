@@ -1,8 +1,9 @@
 import path from "path";
 
-import { supportedExtensions } from "@node-hmr/utils";
 import chalk from "chalk";
 import enhancedResolve from "enhanced-resolve";
+
+import { supportedExtensions } from "./utils";
 
 export let restartIteration = 0;
 

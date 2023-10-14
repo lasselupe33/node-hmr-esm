@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { moduleExtensions, supportedExtensions } from "@node-hmr/utils";
 import chalk from "chalk";
 import enhancedResolve from "enhanced-resolve";
 
 import { restartIteration, run } from "./core.run";
 import { transform } from "./core.transform";
+import { moduleExtensions, supportedExtensions } from "./utils";
 
 type FilePath = string;
 
