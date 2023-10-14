@@ -4,7 +4,7 @@ import { createInterface } from "readline/promises";
 import chalk from "chalk";
 import enhancedResolve from "enhanced-resolve";
 
-import { supportedExtensions } from "./utils";
+import { supportedExtensions } from "./constant.extensions";
 
 const resolver = enhancedResolve.create.sync({
   extensions: supportedExtensions,
@@ -56,8 +56,8 @@ export async function run() {
       const { dispose } = await import(`${entrypoint}?bust=${Math.random()}`);
 
       cleanup = async () => {
-        process.off("unhandledRejection", handleUnexpectedError);
-        process.on("uncaughtException", handleUnexpectedError);
+        process.off("unhandledRejection", onError);
+        process.on("uncaughtException", onError);
         controller.abort();
 
         await dispose?.();
@@ -65,7 +65,7 @@ export async function run() {
     });
   } catch (err) {
     if (err instanceof Error) {
-      handleUnexpectedError(err, controller.signal);
+      onError(err);
     } else {
       throw err;
     }
