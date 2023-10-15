@@ -43,7 +43,7 @@ export function run() {
       const segments = entrypoint.split(path.sep);
 
       console.info(
-        `${chalk.cyan("[node-esm-hmr]")} Executing ${chalk.dim(
+        `${chalk.cyan("[node-hmr-esm]")} Executing ${chalk.dim(
           ` ${segments.slice(0, -3).join(path.sep)}`
         )}${path.sep}${segments.slice(-3).join(path.sep)}\n\n`
       );

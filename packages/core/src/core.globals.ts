@@ -18,7 +18,7 @@ declare global {
 globalThis.hmr = {
   async refresh() {
     console.info(
-      `${chalk.yellow("[node-esm-hmr]")} refresh triggered. ${chalk.dim(
+      `${chalk.yellow("[node-hmr-esm]")} refresh triggered. ${chalk.dim(
         "Re-running entrypoint."
       )}`
     );
@@ -28,7 +28,7 @@ globalThis.hmr = {
 
   async restart() {
     console.info(
-      `${chalk.yellow("[node-esm-hmr]")} restart triggered. ${chalk.dim(
+      `${chalk.yellow("[node-hmr-esm]")} restart triggered. ${chalk.dim(
         "Clearing module states and re-running entrypoint."
       )}`
     );
@@ -50,7 +50,7 @@ export function handleUnexpectedError(error: Error) {
 
   console.error(
     `${chalk.red(
-      "[node-esm-hmr]"
+      "[node-hmr-esm]"
     )} Exception caught. To restart the application type 'rs' or 'restart'. To simply refresh the entrypoint type 'rf' or 'refresh'.`
   );
 

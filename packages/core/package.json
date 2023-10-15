@@ -1,6 +1,6 @@
 {
-  "name": "node-esm-hmr",
-  "version": "0.0.0",
+  "name": "node-hmr-esm",
+  "version": "0.1.0",
   "exports": {
     ".": {
       "types": "./src/index.client.ts",
@@ -21,18 +21,19 @@
     "eslint": "eslint --cache --no-error-on-unmatched-pattern --max-warnings 20 'src/**/*.{js,jsx,ts,tsx,mjs}'",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "dev": "npx rollup -c rollup.config.js --watch",
-    "build": "npx rollup -c rollup.config.js"
+    "build": "npx rollup -c rollup.config.js",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "chalk": "^5.3.0",
     "enhanced-resolve": "^5.15.0",
-    "fast-glob": "^3.3.1",
-    "esbuild": "^0.19.4"
+    "esbuild": "^0.19.4",
+    "fast-glob": "^3.3.1"
   },
   "devDependencies": {
-    "@tooling/typescript-config": "*",
-    "@tooling/rollup-config": "*",
     "@tooling/eslint-config": "*",
+    "@tooling/rollup-config": "*",
+    "@tooling/typescript-config": "*",
     "@types/node": "^18.18.1"
   }
 }
