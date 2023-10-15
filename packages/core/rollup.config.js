@@ -7,5 +7,6 @@ module.exports = withRecommendedConfig({
     empty: "./src/index.empty.ts",
     "loader.hmr": "./src/loader.hmr.ts",
     "loader.esbuild": "./src/loader.esbuild.ts",
+    "loader.ignore": "./src/loader.ignore.ts",
   },
 });

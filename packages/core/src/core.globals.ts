@@ -18,23 +18,60 @@ declare global {
 globalThis.hmr = {
   async refresh() {
     console.info(
-      `${chalk.cyan("[@node-hmr]")} refresh triggered. ${chalk.dim(
+      `${chalk.yellow("[@node-hmr]")} refresh triggered. ${chalk.dim(
         "Re-running entrypoint."
       )}`
     );
 
-    await run();
+    run();
   },
 
   async restart() {
     console.info(
-      `${chalk.cyan("[@node-hmr]")} restart triggered. ${chalk.dim(
+      `${chalk.yellow("[@node-hmr]")} restart triggered. ${chalk.dim(
         "Clearing module states and re-running entrypoint."
       )}`
     );
 
     restartIteration++;
 
-    await run();
+    run();
   },
 };
+
+export function handleUnexpectedError(error: Error) {
+  console.error(error, "\n");
+
+  // In case the error originated from this module, then we cannot recover
+  // gracefully. As such we bail out.
+  if (error.message.includes("@node/hmr")) {
+    process.exit(1);
+  }
+
+  console.error(
+    `${chalk.red(
+      "[@node-hmr]"
+    )} Exception caught. To restart the application hit the 'Enter' key.`
+  );
+
+  console.log("\n");
+}
+
+process.on("unhandledRejection", handleUnexpectedError);
+process.on("uncaughtException", handleUnexpectedError);
+
+process.stdin.on("data", (data) => {
+  const res = data.toString();
+
+  switch (res) {
+    case "rs\n":
+    case "restart\n":
+      globalThis.hmr?.restart();
+      break;
+
+    case "rf\n":
+    case "refresh\n":
+      globalThis.hmr?.refresh();
+      break;
+  }
+});

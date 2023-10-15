@@ -2,7 +2,10 @@ import path from "path";
 
 import esbuild from "esbuild";
 
-import { moduleExtensions, supportedExtensions } from "./constant.extensions";
+import {
+  nodeSupportedExtensions,
+  supportedExtensions,
+} from "./constant.extensions";
 import { resolveURL } from "./util.url.resolve";
 
 export async function resolve(
@@ -17,7 +20,7 @@ export async function resolve(
 ) {
   const resolved = resolveURL(specifier, context.parentURL);
 
-  const requiresESBuild = !moduleExtensions.some(
+  const requiresESBuild = !nodeSupportedExtensions.some(
     (ext) => resolved.url?.pathname.endsWith(ext)
   );
 
@@ -71,7 +74,31 @@ async function transform(filePath: string): Promise<string | undefined> {
     resolveExtensions: supportedExtensions,
     bundle: false,
     write: false,
+    jsx: "automatic",
+    jsxDev: true,
+    plugins: [externalCjsToEsmPlugin],
   });
 
   return transformed.outputFiles[0]?.text;
 }
+
+/**
+ * naïve transpilation of CJS modules to ESM based on ESBuild discussion.
+ * See https://github.com/evanw/esbuild/issues/566#issuecomment-735551834
+ */
+const externalCjsToEsmPlugin: esbuild.Plugin = {
+  name: "cjsToEsm",
+  setup(build) {
+    build.onResolve({ filter: /.*/, namespace: "external" }, (args) => ({
+      path: args.path,
+      external: true,
+    }));
+    build.onResolve({ filter: /.cjs$/ }, (args) => ({
+      path: args.path,
+      namespace: "external",
+    }));
+    build.onLoad({ filter: /.*/, namespace: "external" }, (args) => ({
+      contents: `export * from ${JSON.stringify(args.path)}`,
+    }));
+  },
+};
