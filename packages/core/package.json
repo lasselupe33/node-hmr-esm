@@ -1,14 +1,24 @@
 {
   "name": "node-hmr-esm",
   "version": "0.1.0",
+  "bin": {
+    "node-hmr-esm": "./entrypoint.bash"
+  },
   "exports": {
     ".": {
-      "types": "./src/index.client.ts",
-      "default": "./lib/index.mjs"
+      "types": "./src/core.globals.ts"
     },
-    "./backend": {
-      "types": "./src/index.backend.ts",
-      "default": "./lib/backend.mjs"
+    "./esbuild-loader": {
+      "types": "./src/loader.esbuild.ts",
+      "default": "./lib/loader.esbuild.mjs"
+    },
+    "./hmr-loader": {
+      "types": "./src/loader.hmr.ts",
+      "default": "./lib/loader.hmr.mjs"
+    },
+    "./empty-loader": {
+      "types": "./src/loader.empty.ts",
+      "default": "./lib/loader.empty.mjs"
     }
   },
   "sideEffects": false,
