@@ -3,7 +3,6 @@ import path from "node:path";
 
 import chalk from "chalk";
 
-import { restartIteration } from "./core.globals";
 import { run } from "./core.run";
 import { debounce } from "./util.debounce";
 import { resolveURL } from "./util.url.resolve";
@@ -11,8 +10,8 @@ import { resolveURL } from "./util.url.resolve";
 type FilePath = string;
 
 const encounteredFiles = new Set();
-const fileLastModifiedAt = {} as Record<FilePath, number | undefined>;
-const dependencyMap = new Map<FilePath, Set<FilePath>>();
+const fileIteration = {} as Record<FilePath, number | undefined>;
+const parentsMap = new Map<FilePath, Set<FilePath>>();
 
 export async function resolve(
   specifier: string,
@@ -44,26 +43,16 @@ export async function resolve(
       return;
     }
 
-    const base = dependencyMap.get(parentPathname) ?? new Set<FilePath>();
-    base.add(resolved.url.pathname);
+    const base = parentsMap.get(resolved.url.pathname) ?? new Set<FilePath>();
+    base.add(parentPathname);
 
-    dependencyMap.set(parentPathname, base);
+    parentsMap.set(resolved.url.pathname, base);
   })();
 
-  const lastModifedAt =
-    fileLastModifiedAt[resolved.url.pathname] ||
-    (await fs.promises.stat(resolved.url.pathname)).mtimeMs;
-
-  resolved.url.searchParams.set("mtime", `${lastModifedAt}`);
-
-  resolved.url.searchParams.set("iteration", `${restartIteration}`);
-
-  for (const dependency of dependencyMap.get(resolved.url.pathname) ?? []) {
-    resolved.url.searchParams.set(
-      dependency,
-      `${fileLastModifiedAt[dependency] ?? 0}`
-    );
-  }
+  resolved.url.searchParams.set(
+    "iteration",
+    `${fileIteration[resolved.url.pathname] || 0}`
+  );
 
   return {
     format: context.format || "module",
@@ -94,15 +83,12 @@ export async function load(
 
   if (!encounteredFiles.has(url.pathname)) {
     encounteredFiles.add(url.pathname);
-
-    fileLastModifiedAt[url.pathname] = (
-      await fs.promises.stat(url.pathname)
-    ).mtimeMs;
+    fileIteration[url.pathname] ??= 0;
 
     const onFileChange = debounce(async () => {
       const nextModifiedAt = (await fs.promises.stat(url.pathname)).mtimeMs;
 
-      if (fileLastModifiedAt[url.pathname] !== nextModifiedAt) {
+      if (fileIteration[url.pathname] !== nextModifiedAt) {
         const segments = url.pathname.split(path.sep);
 
         console.info(
@@ -116,8 +102,14 @@ export async function load(
         run();
       }
 
-      fileLastModifiedAt[url.pathname] = nextModifiedAt;
-    }, 10);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      fileIteration[url.pathname]! += 1;
+
+      for (const parent of getTransitiveParents(url.pathname)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        fileIteration[parent]! += 1;
+      }
+    }, 50);
 
     fs.watch(url.pathname, onFileChange);
   }
@@ -130,3 +122,19 @@ export async function load(
 }
 
 setTimeout(run, 0);
+
+export function getTransitiveParents(
+  path: string,
+  foundParents = new Set<string>()
+) {
+  for (const parent of parentsMap.get(path) ?? []) {
+    if (foundParents.has(parent)) {
+      continue;
+    }
+
+    foundParents.add(parent);
+    getTransitiveParents(parent, foundParents);
+  }
+
+  return foundParents;
+}
