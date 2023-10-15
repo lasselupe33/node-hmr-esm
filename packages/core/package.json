@@ -1,6 +1,6 @@
 {
   "name": "node-hmr-esm",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "bin": {
     "node-hmr-esm": "./entrypoint.bash"
   },
