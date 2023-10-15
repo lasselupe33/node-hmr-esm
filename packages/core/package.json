@@ -23,6 +23,8 @@
   },
   "sideEffects": false,
   "files": [
+    "entrypoint.bash",
+    "LICENSE",
     "lib/**/*",
     "src/**/*"
   ],
