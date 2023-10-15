@@ -5,6 +5,7 @@ import chalk from "chalk";
 
 import { restartIteration } from "./core.globals";
 import { run } from "./core.run";
+import { debounce } from "./util.debounce";
 import { resolveURL } from "./util.url.resolve";
 
 type FilePath = string;
@@ -98,7 +99,7 @@ export async function load(
       await fs.promises.stat(url.pathname)
     ).mtimeMs;
 
-    fs.watch(url.pathname, async () => {
+    const onFileChange = debounce(async () => {
       const nextModifiedAt = (await fs.promises.stat(url.pathname)).mtimeMs;
 
       if (fileLastModifiedAt[url.pathname] !== nextModifiedAt) {
@@ -116,7 +117,9 @@ export async function load(
       }
 
       fileLastModifiedAt[url.pathname] = nextModifiedAt;
-    });
+    }, 10);
+
+    fs.watch(url.pathname, onFileChange);
   }
 
   return {
