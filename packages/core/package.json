@@ -1,5 +1,5 @@
 {
-  "name": "@node-hmr/core",
+  "name": "node-esm-hmr",
   "version": "0.0.0",
   "exports": {
     ".": {
@@ -21,9 +21,7 @@
     "eslint": "eslint --cache --no-error-on-unmatched-pattern --max-warnings 20 'src/**/*.{js,jsx,ts,tsx,mjs}'",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "dev": "npx rollup -c rollup.config.js --watch",
-    "build": "npx rollup -c rollup.config.js",
-    "start": "CSS_EXTRACT__DEBUG=true node ./lib/index.mjs",
-    "debug": "node --inspect --loader ./lib/loader.mjs ./lib/empty.mjs"
+    "build": "npx rollup -c rollup.config.js"
   },
   "dependencies": {
     "chalk": "^5.3.0",

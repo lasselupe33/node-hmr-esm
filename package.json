@@ -1,5 +1,5 @@
 {
-  "name": "@node-hmr/monorepo",
+  "name": "@node-hmr-esm/monorepo",
   "version": "0.0.0",
   "private": true,
   "root": true,

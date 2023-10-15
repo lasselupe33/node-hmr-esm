@@ -98,18 +98,14 @@ export async function load(
       await fs.promises.stat(url.pathname)
     ).mtimeMs;
 
-    fs.watch(url.pathname, async (type) => {
-      if (type !== "change") {
-        return;
-      }
-
+    fs.watch(url.pathname, async () => {
       const nextModifiedAt = (await fs.promises.stat(url.pathname)).mtimeMs;
 
       if (fileLastModifiedAt[url.pathname] !== nextModifiedAt) {
         const segments = url.pathname.split(path.sep);
 
         console.info(
-          `${chalk.cyan("[@node-hmr]")} detected change in ${chalk.dim(
+          `${chalk.cyan("[node-esm-hmr]")} detected change in ${chalk.dim(
             `${segments.slice(0, -3).join(path.sep)}`
           )}${path.sep}${segments.slice(-3).join(path.sep)}. ${chalk.dim(
             "Clearing module state and re-running entrypoint."
