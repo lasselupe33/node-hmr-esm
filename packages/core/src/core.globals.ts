@@ -42,12 +42,6 @@ globalThis.hmr = {
 export function handleUnexpectedError(error: Error) {
   console.error(error, "\n");
 
-  // In case the error originated from this module, then we cannot recover
-  // gracefully. As such we bail out.
-  if (error.message.includes("@node/hmr")) {
-    process.exit(1);
-  }
-
   console.error(
     `${chalk.red(
       "[node-hmr-esm]"
