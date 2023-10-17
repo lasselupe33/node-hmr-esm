@@ -1,12 +1,5 @@
-import fs from "fs";
-import path from "path";
-
-import esbuild from "esbuild";
-
-import {
-  nodeSupportedExtensions,
-  supportedExtensions,
-} from "./constant.extensions";
+import { nodeSupportedExtensions } from "./constant.extensions";
+import { transformSource } from "./util.transform-source";
 import { resolveURL } from "./util.url.resolve";
 
 export async function resolve(
@@ -55,7 +48,7 @@ export async function load(
     return next(specifier, context);
   }
 
-  const transformed = await transform(url.pathname);
+  const transformed = await transformSource(url.pathname);
 
   return next(specifier, {
     ...context,
@@ -63,63 +56,3 @@ export async function load(
     source: transformed,
   });
 }
-
-const cache = new Map<
-  string,
-  { modifiedAtMs: number; source: Promise<string | undefined> }
->();
-
-async function transform(filePath: string): Promise<string | undefined> {
-  const modifiedAt = (await fs.promises.stat(filePath)).mtimeMs;
-
-  const cached = cache.get(filePath);
-
-  if (modifiedAt === cached?.modifiedAtMs) {
-    return await cached.source;
-  }
-
-  const sourcePromise = esbuild
-    .build({
-      // @todo implement pre stage that collects all entrypoints so we can do
-      // this once instead of multiple times.
-      entryPoints: [filePath],
-      outdir: path.dirname(filePath),
-      format: "esm",
-      target: "node18",
-      resolveExtensions: supportedExtensions,
-      bundle: false,
-      write: false,
-      jsx: "automatic",
-      jsxDev: true,
-      plugins: [externalCjsToEsmPlugin],
-    })
-    .then((transformed) => transformed.outputFiles[0]?.text);
-
-  cache.set(filePath, {
-    modifiedAtMs: modifiedAt,
-    source: sourcePromise,
-  });
-
-  return await sourcePromise;
-}
-
-/**
- * naïve transpilation of CJS modules to ESM based on ESBuild discussion.
- * See https://github.com/evanw/esbuild/issues/566#issuecomment-735551834
- */
-const externalCjsToEsmPlugin: esbuild.Plugin = {
-  name: "cjsToEsm",
-  setup(build) {
-    build.onResolve({ filter: /.*/, namespace: "external" }, (args) => ({
-      path: args.path,
-      external: true,
-    }));
-    build.onResolve({ filter: /.cjs$/ }, (args) => ({
-      path: args.path,
-      namespace: "external",
-    }));
-    build.onLoad({ filter: /.*/, namespace: "external" }, (args) => ({
-      contents: `export * from ${JSON.stringify(args.path)}`,
-    }));
-  },
-};

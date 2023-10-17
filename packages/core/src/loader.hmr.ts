@@ -4,6 +4,7 @@ import path from "node:path";
 import chalk from "chalk";
 
 import { run } from "./core.run";
+import { loadSource } from "./util.load-source";
 import { resolveURL } from "./util.url.resolve";
 
 type FilePath = string;
@@ -91,30 +92,32 @@ export async function load(
     const onFileChange = async () => {
       const nextModifiedAt = (await fs.promises.stat(url.pathname)).mtimeMs;
 
-      if (fileModifiedAtMs[url.pathname] !== nextModifiedAt) {
-        fileModifiedAtMs[url.pathname] = nextModifiedAt;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        fileIteration[url.pathname]! += 1;
-
-        const ancestors = getTransitiveParents(url.pathname);
-
-        for (const parent of ancestors) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          fileIteration[parent]! += 1;
-        }
-
-        const segments = url.pathname.split(path.sep);
-
-        console.info(
-          `${chalk.cyan("[node-hmr-esm]")} detected change in ${chalk.dim(
-            `${segments.slice(0, -3).join(path.sep)}`
-          )}${path.sep}${segments.slice(-3).join(path.sep)}. ${chalk.dim(
-            `(${ancestors.size})`
-          )}`
-        );
-
-        run();
+      if (fileModifiedAtMs[url.pathname] === nextModifiedAt) {
+        return;
       }
+
+      fileModifiedAtMs[url.pathname] = nextModifiedAt;
+
+      const ancestors = getTransitiveParents(url.pathname);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      fileIteration[url.pathname]! += 1;
+
+      for (const parent of ancestors) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        fileIteration[parent]! += 1;
+      }
+
+      const segments = url.pathname.split(path.sep);
+
+      console.info(
+        `${chalk.cyan("[node-hmr-esm]")} detected change in ${chalk.dim(
+          `${segments.slice(0, -3).join(path.sep)}`
+        )}${path.sep}${segments.slice(-3).join(path.sep)}. ${chalk.dim(
+          `(${ancestors.size})`
+        )}`
+      );
+
+      run();
     };
 
     fs.watch(url.pathname, onFileChange);
@@ -123,7 +126,7 @@ export async function load(
   return {
     format: "module",
     shortCircuit: true,
-    source: context.source || (await fs.promises.readFile(url.pathname)),
+    source: context.source || (await loadSource(url.pathname)),
   };
 }
 
