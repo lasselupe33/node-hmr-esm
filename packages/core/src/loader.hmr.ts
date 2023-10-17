@@ -4,13 +4,13 @@ import path from "node:path";
 import chalk from "chalk";
 
 import { run } from "./core.run";
-import { debounce } from "./util.debounce";
 import { resolveURL } from "./util.url.resolve";
 
 type FilePath = string;
 
 const encounteredFiles = new Set();
 const fileIteration = {} as Record<FilePath, number | undefined>;
+const fileModifiedAtMs = {} as Record<FilePath, number | undefined>;
 const parentsMap = new Map<FilePath, Set<FilePath>>();
 
 export async function resolve(
@@ -84,32 +84,38 @@ export async function load(
   if (!encounteredFiles.has(url.pathname)) {
     encounteredFiles.add(url.pathname);
     fileIteration[url.pathname] ??= 0;
+    fileModifiedAtMs[url.pathname] = (
+      await fs.promises.stat(url.pathname)
+    ).mtimeMs;
 
-    const onFileChange = debounce(async () => {
+    const onFileChange = async () => {
       const nextModifiedAt = (await fs.promises.stat(url.pathname)).mtimeMs;
 
-      if (fileIteration[url.pathname] !== nextModifiedAt) {
+      if (fileModifiedAtMs[url.pathname] !== nextModifiedAt) {
+        fileModifiedAtMs[url.pathname] = nextModifiedAt;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        fileIteration[url.pathname]! += 1;
+
+        const ancestors = getTransitiveParents(url.pathname);
+
+        for (const parent of ancestors) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          fileIteration[parent]! += 1;
+        }
+
         const segments = url.pathname.split(path.sep);
 
         console.info(
           `${chalk.cyan("[node-hmr-esm]")} detected change in ${chalk.dim(
             `${segments.slice(0, -3).join(path.sep)}`
           )}${path.sep}${segments.slice(-3).join(path.sep)}. ${chalk.dim(
-            "Clearing module state and re-running entrypoint."
+            `(${ancestors.size})`
           )}`
         );
 
         run();
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      fileIteration[url.pathname]! += 1;
-
-      for (const parent of getTransitiveParents(url.pathname)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        fileIteration[parent]! += 1;
-      }
-    }, 50);
+    };
 
     fs.watch(url.pathname, onFileChange);
   }
