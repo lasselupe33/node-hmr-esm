@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 
 import esbuild from "esbuild";
@@ -63,23 +64,43 @@ export async function load(
   });
 }
 
+const cache = new Map<
+  string,
+  { modifiedAtMs: number; source: Promise<string | undefined> }
+>();
+
 async function transform(filePath: string): Promise<string | undefined> {
-  const transformed = await esbuild.build({
-    // @todo implement pre stage that collects all entrypoints so we can do
-    // this once instead of multiple times.
-    entryPoints: [filePath],
-    outdir: path.dirname(filePath),
-    format: "esm",
-    target: "node18",
-    resolveExtensions: supportedExtensions,
-    bundle: false,
-    write: false,
-    jsx: "automatic",
-    jsxDev: true,
-    plugins: [externalCjsToEsmPlugin],
+  const modifiedAt = (await fs.promises.stat(filePath)).mtimeMs;
+
+  const cached = cache.get(filePath);
+
+  if (modifiedAt === cached?.modifiedAtMs) {
+    return await cached.source;
+  }
+
+  const sourcePromise = esbuild
+    .build({
+      // @todo implement pre stage that collects all entrypoints so we can do
+      // this once instead of multiple times.
+      entryPoints: [filePath],
+      outdir: path.dirname(filePath),
+      format: "esm",
+      target: "node18",
+      resolveExtensions: supportedExtensions,
+      bundle: false,
+      write: false,
+      jsx: "automatic",
+      jsxDev: true,
+      plugins: [externalCjsToEsmPlugin],
+    })
+    .then((transformed) => transformed.outputFiles[0]?.text);
+
+  cache.set(filePath, {
+    modifiedAtMs: modifiedAt,
+    source: sourcePromise,
   });
 
-  return transformed.outputFiles[0]?.text;
+  return await sourcePromise;
 }
 
 /**
