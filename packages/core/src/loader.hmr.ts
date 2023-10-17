@@ -10,7 +10,7 @@ import { resolveURL } from "./util.url.resolve";
 type FilePath = string;
 
 const encounteredFiles = new Set();
-const fileIteration = {} as Record<FilePath, number | undefined>;
+export const fileIteration = {} as Record<FilePath, number | undefined>;
 const fileModifiedAtMs = {} as Record<FilePath, number | undefined>;
 const parentsMap = new Map<FilePath, Set<FilePath>>();
 

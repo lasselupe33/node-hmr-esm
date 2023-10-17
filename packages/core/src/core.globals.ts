@@ -1,8 +1,7 @@
 import chalk from "chalk";
 
 import { run } from "./core.run";
-
-export let restartIteration = 0;
+import { fileIteration } from "./loader.hmr";
 
 // @todo how to import this in consumers?
 declare global {
@@ -33,7 +32,10 @@ globalThis.hmr = {
       )}`
     );
 
-    restartIteration++;
+    for (const file of Object.keys(fileIteration)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      fileIteration[file]!++;
+    }
 
     run();
   },
